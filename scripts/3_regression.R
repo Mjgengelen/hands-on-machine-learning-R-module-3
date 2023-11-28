@@ -50,7 +50,8 @@ nn_freq_intercept %>% fit(x = intercept,
                           y = counts,
                           epochs = 30,
                           batch_size = 1024,
-                          validation_split = 0)
+                          validation_split = 0,
+                          verbose = 0)
 
 
 ## --------------------------------------------------------------------------------------------------------------------------------------------------
@@ -71,36 +72,35 @@ nn_freq_intercept$get_weights()
 nn_binary <- 
   keras_model_sequential() %>%
   layer_dense(units = 1, 
-              activation = ..., 
+              activation = 'sigmoid', 
               input_shape = c(1), 
               use_bias = FALSE) %>%
-  compile(loss = ...,
+  compile(loss = 'binary_crossentropy',
           optimize = optimizer_rmsprop(),
-          metrics = ...)
+          metrics = c('accuracy'))
 
 nn_binary %>% fit(x = intercept,
-                  y = ...,
-                  epochs = ...,
-                  batch_size = ...,
-                  validation_split = 0)
+                  y = (counts>0),
+                  epochs = 40,
+                  batch_size = 1024,
+                  validation_split = 0,
+                  verbose = 0)
 
 
-glm_binary <- glm(... ~ 1, 
+glm_binary <- glm((nclaims > 0) ~ 1, 
                   data = mtpl_train, 
-                  family = ...)
+                  family = binomial(link = "logit"))
 
+glm_binary$coefficients
 
+as.numeric(nn_binary$get_weights())
 
+unique(predict(glm_binary, type = 'response'))
 
-
-
-
-
-
-
-
+unique(predict(nn_binary, x = intercept))
 
 ## --------------------------------------------------------------------------------------------------------------------------------------------------
+# Exposure geeft hetzelfde resultaat als target delen door expo en weights gelijk stellen aan expo.
 glm_offset <- glm(nclaims ~ ageph,
                   family = poisson(link = 'log'),
                   data = mtpl_train,
@@ -112,7 +112,6 @@ glm_weights <- glm(nclaims / expo ~ ageph,
                    data = mtpl_train,
                    weights = expo)
 glm_weights$coefficients
-
 
 ## --------------------------------------------------------------------------------------------------------------------------------------------------
 nn_freq_exposure <- 
@@ -130,15 +129,23 @@ exposure <- mtpl_train$expo
 
 
 ## --------------------------------------------------------------------------------------------------------------------------------------------------
+# Exposure meenemen in neuraal netwerk door target delen door expo en weights gelijk stellen aan expo.
 nn_freq_exposure %>%
   fit(x = intercept,
       y = counts / exposure,
       sample_weight = exposure,
       epochs = 20,
       batch_size = 1024,
-      validation_split = 0)
+      validation_split = 0,
+      verbose = 0)
 
+as.numeric(nn_freq_exposure$get_weights())
 
+glm_exposure <- glm(nclaims ~ 1,
+                  family = poisson(link = 'log'),
+                  data = mtpl_train,
+                  offset = log(expo))
+glm_exposure$coefficients
 ## --------------------------------------------------------------------------------------------------------------------------------------------------
 ageph <- mtpl_train$ageph
 
@@ -162,7 +169,8 @@ nn_freq_ageph %>%
       sample_weight = exposure,
       epochs = 20,
       batch_size = 1024,
-      validation_split = 0)
+      validation_split = 0,
+      verbose = 0)
 
 
 ## --------------------------------------------------------------------------------------------------------------------------------------------------
@@ -192,7 +200,7 @@ input_nn <- layer_input(shape = c(1), name = 'nn')
 network <- input_nn %>% layer_batch_normalization() %>% layer_dense(units = 5, activation = 'tanh') %>%
   layer_dense(units = 1, activation = 'linear')
 
-output <- list(network, input_skip) %>% layer_add() %>% 
+output <- list(network, input_skip) %>% layer_add() %>%
   layer_dense(units = 1, activation = 'exponential', trainable = FALSE, name = 'output',
               weights = list(array(1, dim = c(1,1)), array(0, dim = c(1))))
 
@@ -200,7 +208,18 @@ cann <- keras_model(inputs = list(input_nn, input_skip), outputs = output)
 
 cann %>% compile(loss = 'poisson', optimize = optimizer_rmsprop())
 
-
+# input_nn   <- layer_input(shape = c(1), name = 'nn')
+# input_skip <- layer_input(shape = c(1), name = 'skip')
+# 
+# output_nn <- input_nn %>% layer_dense(units = 5, activation = 'tanh') %>%
+#   layer_dense(units = 1, activation = NULL)
+# 
+# output <- list(output_nn, input_skip) %>% layer_add() %>%
+#   layer_dense(units = 1, activation = 'exponential', trainable = FALSE, name = 'output',
+#               weights = list(array(1, dim = c(1,1)), array(0, dim = c(1))))
+# 
+# cann <- keras_model(inputs = list(input_nn, input_skip), outputs = output)
+# cann %>% compile(loss = 'poisson', optimize = optimizer_rmsprop())
 ## --------------------------------------------------------------------------------------------------------------------------------------------------
 gam_expo <- predict(gam_ageph) + log(mtpl_train$expo)
 
@@ -215,7 +234,8 @@ cann %>% fit(x = cann_input,
              y = counts,
              epochs = 20,
              batch_size = 1024,
-             validation_split = 0)
+             validation_split = 0,
+             verbose = 0)
 
 
 ## --------------------------------------------------------------------------------------------------------------------------------------------------

@@ -66,7 +66,7 @@ plot_image(input[17, ], legend = FALSE)
 ## --------------------------------------------------------------------------------------------------------------------------------------------------
 library(keras)
 model <- keras_model_sequential() %>%
-  layer_dense(units = 16, 
+  layer_dense(units = 512, 
               activation = 'sigmoid', 
               input_shape = c(784)) %>%
   layer_dense(units = 10, 
@@ -92,33 +92,25 @@ model %>% fit(input,
 
 ## Your Turn!
 ## --------------------------------------------------------------------------------------------------------------------------------------------------
+#Total number of parameters (784+1)*512+(512+1)*10
 your_model <- keras_model_sequential() %>%
-  layer_dense(units = ...,
-              activation = ...,
-              input_shape = ...) %>%
-  layer_dense(units = ...,
-              activation = ...)
+  layer_dense(units = 512,
+              activation = 'relu',
+              input_shape = c(784)) %>%
+  layer_dense(units = 10,
+              activation = 'softmax')
 
 summary(your_model)
 
-your_model <- your_model %>% compile(loss = ...,
-                                     optimize = ...,
+your_model <- your_model %>% compile(loss = 'categorical_crossentropy',
+                                     optimize = optimizer_rmsprop(),
                                      metrics = c('accuracy'))
 
-your_model %>% fit(...,
-                   ...,
-                   batch_size = ..., 
-                   epochs = ..., 
-                   validation_split = ...)
-
-
-
-
-
-
-
-
-
+your_model %>% fit(input,
+                   output,
+                   batch_size = 512, 
+                   epochs = 10, 
+                   validation_split = 0.2)
 
 ## --------------------------------------------------------------------------------------------------------------------------------------------------
 model %>% evaluate(test_input, test_output, verbose = 0)
@@ -160,15 +152,30 @@ plot_image(test_input[index, ]) +
 
 ## Your Turn!
 ## --------------------------------------------------------------------------------------------------------------------------------------------------
-your_model %>% evaluate(...)
+your_model %>% evaluate(test_input, test_output, verbose = 0)
 
-your_model %>% predict(...)
+prediction_model <- your_model %>% predict(test_input)
+round(prediction_model[1, ], 3)
 
+category_model <- apply(prediction_model, 1, which.max) - 1
+head(which(actual_category != category_model))
 
+index <- 248
+plot_image(test_input[index, ]) +
+  ggtitle(paste('actual: ', actual_category[index], 
+                ' predicted: ', category_model[index], sep='')) +
+  theme(legend.position = 'none', 
+        plot.title = element_text(hjust = 0.5))
 
+prob_correct_model <- prediction_model[cbind(1:nrow(prediction_model), actual_category + 1)]
+which(rank(prob_correct_model) <= 5)
 
-
-
+index <- which(rank(prob_correct_model) <= 5)[1]
+plot_image(test_input[index, ]) +
+  ggtitle(paste('actual: ', actual_category[index], 
+                ' predicted: ', category_model[index], sep='')) +
+  theme(legend.position = 'none', 
+        plot.title = element_text(hjust = 0.5))
 
 
 

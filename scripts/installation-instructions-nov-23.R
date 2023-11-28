@@ -16,11 +16,16 @@ library(keras)
 library(tensorflow)
 library(reticulate)
 # you should replace the path below with the path that leads to your local Python installation
-path_to_python <- "C:/Users/.../AppData/Local/Programs/Python/Python311/python.exe" 
-virtualenv_create("r-reticulate", python = path_to_python)
-install_tensorflow(envname = "r-reticulate")
-install_keras(envname = "r-reticulate")
-use_virtualenv("r-reticulate")
+# path_to_python <- "/usr/local/bin/python3" 
+# virtualenv_create("r-reticulate")#, python = path_to_python
+# install_tensorflow(envname = "r-reticulate")
+conda_create(condaenv = "r-reticulate")
+use_condaenv(condaenv = "r-reticulate")
+tensorflow::install_tensorflow(condaenv = "r-reticulate")
+# use_condaenv(condaenv = "r-reticulate")
+install_keras(condaenv = "r-reticulate")
+use_virtualenv("r-tensorflow")
+# use_condaenv(condaenv = "r-reticulate")
 
 # alternatively, you can follow the installation steps outlined here
 # https://tensorflow.rstudio.com/install/
