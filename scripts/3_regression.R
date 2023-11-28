@@ -50,8 +50,9 @@ nn_freq_intercept %>% fit(x = intercept,
                           y = counts,
                           epochs = 30,
                           batch_size = 1024,
-                          validation_split = 0,
-                          verbose = 0)
+                          validation_split = 0#,
+                          #verbose = 0
+                          )
 
 
 ## --------------------------------------------------------------------------------------------------------------------------------------------------
@@ -83,8 +84,9 @@ nn_binary %>% fit(x = intercept,
                   y = (counts>0),
                   epochs = 40,
                   batch_size = 1024,
-                  validation_split = 0,
-                  verbose = 0)
+                  validation_split = 0#,
+                  #verbose = 0
+                  )
 
 
 glm_binary <- glm((nclaims > 0) ~ 1, 
@@ -136,8 +138,9 @@ nn_freq_exposure %>%
       sample_weight = exposure,
       epochs = 20,
       batch_size = 1024,
-      validation_split = 0,
-      verbose = 0)
+      validation_split = 0#,
+      #verbose = 0
+      )
 
 as.numeric(nn_freq_exposure$get_weights())
 
@@ -169,8 +172,9 @@ nn_freq_ageph %>%
       sample_weight = exposure,
       epochs = 20,
       batch_size = 1024,
-      validation_split = 0,
-      verbose = 0)
+      validation_split = 0#,
+      #verbose = 0
+      )
 
 
 ## --------------------------------------------------------------------------------------------------------------------------------------------------
@@ -234,8 +238,9 @@ cann %>% fit(x = cann_input,
              y = counts,
              epochs = 20,
              batch_size = 1024,
-             validation_split = 0,
-             verbose = 0)
+             validation_split = 0#,
+             #verbose = 0
+             )
 
 
 ## --------------------------------------------------------------------------------------------------------------------------------------------------
@@ -271,7 +276,9 @@ nn_sev_log %>%
   fit(x = rep(1, nrow(claims)),
       y = log(claims$avg),
       epochs = 100, batch_size = 128, 
-      validation_split = 0)
+      validation_split = 0#,
+      #verbose = 0
+      )
 
 ## --------------------------------------------------------------------------------------------------------------------------------------------------
 predict(nn_sev_log, 1) %>% exp() %>% as.numeric()
@@ -298,7 +305,8 @@ nn_sev_gamma %>%
   fit(x = rep(1, nrow(claims)),
       y = claims$avg,
       epochs = 100, batch_size = 128, 
-      validation_split = 0)
+      validation_split = 0#, verbose = 0
+      )
 
 
 ## --------------------------------------------------------------------------------------------------------------------------------------------------
