@@ -43,7 +43,7 @@ dim(input_train)
 # 1) Keras on your local machine
 input_train <- k_expand_dims(input_train)
 # 2) Keras on the cloud
-dim(input_train) <- c(dim(input_train), 1)
+# dim(input_train) <- c(dim(input_train), 1)
 
 dim(input_train) # should return: 60000    28    28     1
 
@@ -52,7 +52,7 @@ dim(input_train) # should return: 60000    28    28     1
 # 1) Keras on your local machine
 input_test <- k_expand_dims(input_test)
 # 2) Keras on the cloud
-dim(input_test) <- c(dim(input_test), 1)
+# dim(input_test) <- c(dim(input_test), 1)
 
 dim(input_test) # should return: 10000    28    28     1
 
@@ -65,10 +65,11 @@ output_test <- keras::to_categorical(mnist$test$y, 10)
 ## --------------------------------------------------------------------------------------------------------------------------------------------------
 model <- keras_model_sequential() %>%
   layer_conv_2d(filters = 8, 
-                kernel_size = 3, 
+                kernel_size = 3, #c(3,3), 
                 input_shape = c(28, 28, 1)) %>%
-  layer_max_pooling_2d(pool_size = 2,
-                       strides = 2) %>%
+  layer_max_pooling_2d(pool_size = 2, #c(2,2),
+                       strides = 2 #c(2,2)
+                       ) %>%
   layer_flatten() %>%
   layer_dense(units = 10, 
               activation = 'softmax') %>%
@@ -106,7 +107,7 @@ cbind(category, actual_category)[93,]
 # 1) Keras on your local machine
 plot_image(as.vector(t(as.array(input_test[93, , ,])[,,1])))
 # 2) Keras on the cloud
-plot_image(as.vector(t(as.array(input_test[93, , ,]))))
+# plot_image(as.vector(t(as.array(input_test[93, , ,]))))
 
 
 ## --------------------------------------------------------------------------------------------------------------------------------------------------
@@ -124,8 +125,34 @@ do.call(gridExtra::grid.arrange, maps)
 ## Your Turn!
 ## --------------------------------------------------------------------------------------------------------------------------------------------------
 
+your_model <- keras_model_sequential() %>%
+  layer_conv_2d(filters = 20, 
+                kernel_size = c(3,3), #c(3,3), 
+                input_shape = c(28, 28, 1)) %>%
+  layer_max_pooling_2d(pool_size = c(2,2), #c(2,2),
+                       strides = c(2,2) #c(2,2)
+  ) %>%
+  layer_flatten() %>%
+  layer_dense(units = 50, 
+              activation = 'relu') %>% 
+  layer_dense(units = 10, 
+              activation = 'softmax')  %>%
+  compile(loss = 'categorical_crossentropy',
+          optimize = optimizer_rmsprop(),
+          metrics = c('accuracy')) 
+
+summary(your_model)
+
+your_model %>% fit(x = input_train,
+                  y = output_train, 
+                  epochs = 10, 
+                  batch_size = 128, 
+                  validation_split = 0.2)
 
 
+## --------------------------------------------------------------------------------------------------------------------------------------------------
+your_model %>% evaluate(input_test,
+                        output_test)
 
 
 
