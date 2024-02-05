@@ -53,34 +53,27 @@ plot_image <- function(data, legend = TRUE) {
 library(keras)
 encoder <- keras_model_sequential() %>%
   layer_dense(units = 128, 
-              activation = ..., 
+              activation = 'sigmoid', 
               input_shape = c(784)) %>%
   layer_dense(units = 32,
-              activation = ...)
+              activation = 'sigmoid')
 
 model <- encoder %>%
   layer_batch_normalization() %>%
   layer_dense(units = 128,
-              activation = ...) %>%
+              activation = 'sigmoid') %>%
   layer_dense(units = 784,
-              activation = ...) %>%
-  compile(loss = ...,
-          optimize = ...,
-          metrics = ...)
+              activation = 'sigmoid') %>%
+  compile(loss = 'binary_crossentropy',
+          optimize = optimizer_rmsprop(),
+          metrics = c('mse'))
 
-model %>% fit(..., 
-              ..., 
+model %>% fit(input_train, 
+              input_train, 
               epochs = 10, 
-              batch_size = ..., 
+              batch_size = 256, 
               shuffle = TRUE, 
-              validation_split = ...)
-
-
-
-
-
-
-
+              validation_split = 0.2)
 
 
 ## --------------------------------------------------------------------------------------------------------------------------------------------------

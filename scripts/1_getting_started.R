@@ -22,6 +22,3 @@ k_log(x_new)
 k_mean(x_new, axis = 1)
 k_mean(x_new, axis = 2)
 k_mean(x_new, axis = 3)
-
-
-
